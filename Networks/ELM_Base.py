@@ -593,12 +593,26 @@ class PIELM(object):
              out2hidden: the output
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XYZ_input)    # Y = x·W+B
-        act_out2hidden = self.act_func2DDeri(hidden_linear)                 # Z = sigma''(Y), this is a matrix
+        SecondOrder_out2hidden = self.act_func2DDeri(hidden_linear)
+        FourOrder_out2hidden = self.act_func2DDDDeri(hidden_linear)  # Z = sigma''(Y), this is a matrix
+
+        squareW = np.square(self.W2Hidden)
+        W2X = np.reshape(squareW[0, :], newshape=[1, -1])
+        W2Y = np.reshape(squareW[1, :], newshape=[1, -1])
+        W2Z = np.reshape(squareW[2, :], newshape=[1, -1])
+
+        coef_Matrix2X = np.multiply(SecondOrder_out2hidden, W2X)
+        coef_Matrix2Y = np.multiply(SecondOrder_out2hidden, W2Y)
+        coef_Matrix2Z = np.multiply(SecondOrder_out2hidden, W2Z)
 
         square_squareW = np.square(np.square(self.W2Hidden))
         sum2W_column = np.reshape(np.sum(square_squareW, axis=0), newshape=[1, -1])   # the sum of column for weight matrix
 
-        coef_Matrix = np.multiply(act_out2hidden, sum2W_column)   # the hadamard product for column_sum of weight and Z
+        coef_Matrix2FourOrder = np.multiply(FourOrder_out2hidden, sum2W_column)    # the hadamard product for column_sum of weight and Z
+
+        coef_Matrix = coef_Matrix2FourOrder + 2.0 * np.multiply(coef_Matrix2X, coef_Matrix2Y) + \
+                      2.0 * np.multiply(coef_Matrix2X, coef_Matrix2Z) + \
+                      2.0 * np.multiply(coef_Matrix2Y, coef_Matrix2Z)
 
         return coef_Matrix
 
