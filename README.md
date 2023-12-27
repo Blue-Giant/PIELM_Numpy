@@ -7,7 +7,7 @@ Physcial Informed Extreme Learning Machine(PIELM) method to solve PDEs, such as 
 ## Extreme Learning Machine-Assisted Solution of Biharmonic Equations via Its Coupled Schemes
 created by Xi’an Li, Jinran Wu, Jiaxin Deng, Zhe Ding, You-Gan Wang, Xin Tai, Liang Liua
 
-[[Paper]]([https://arxiv.org/pdf/2009.14597.pdf](https://arxiv.org/pdf/2310.13947.pdf))
+[[Paper]](https://arxiv.org/pdf/2310.13947.pdf)
 
 ### Ideas
 This work exploited the technique of shifting the input data in narrow-range into large-range, then fed the transformed data into the DNN pipline.
