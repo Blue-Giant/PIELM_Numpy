@@ -63,7 +63,7 @@ class my_actFunc(object):
         return out_x
 
 
-# The defined activation function for 1st derivative
+# The activation function for 1st-order derivative
 class ActFunc2Derivate(object):
     def __init__(self, actName='linear'):
         super(ActFunc2Derivate, self).__init__()
@@ -87,7 +87,7 @@ class ActFunc2Derivate(object):
         return out_x
 
 
-# The defined activation function for 2nd derivative
+# The activation function for 2nd order derivative
 class ActFunc2DDerivate(object):
     def __init__(self, actName='linear'):
         super(ActFunc2DDerivate, self).__init__()
@@ -109,7 +109,7 @@ class ActFunc2DDerivate(object):
         return out_x
 
 
-# The defined activation function for 4th derivative
+# The activation function for 4th order derivative
 class ActFunc2DDDDerivate(object):
     def __init__(self, actName='linear'):
         super(ActFunc2DDDDerivate, self).__init__()
@@ -198,7 +198,7 @@ class PIELM(object):
 
     def get_linear_out2Hidden(self, input_data=None):
         """
-        the linear transformation for input by operator x·W+B
+        the linear transformation for input by operator: x·W+B
         Args:
              input_data: the input points
         return:
@@ -212,11 +212,11 @@ class PIELM(object):
 
     def get_out2Hidden(self, input_data=None):
         """
-        the linear transformation for input by operator x·W+B
+        the linear transformation for input by operator: Sigma(x·W+B)
         Args:
              input_data: the input points
         return:
-             out2hidden: the output of linear transformation
+             act_out2hidden: the output of linear transformation performed by activation function
         """
         shape2input = input_data.shape
         lenght2input_shape = len(shape2input)
@@ -231,7 +231,7 @@ class PIELM(object):
         Args:
              X_input: the input points
         return:
-             out2hidden: the output
+             act_out2hidden: the output performed by activation function
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=X_input)    # Y = x·W+B
         act_out2hidden = self.act_func2hidden(hidden_linear)              # Z = sigma(Y)
@@ -243,7 +243,7 @@ class PIELM(object):
         Args:
              X_input: the input points
         return:
-             out2hidden: the output
+             act_out2hidden: the output performed by activation function
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=X_input)   # Y = x·W+B
         act_out2hidden = self.act_func2hidden(hidden_linear)             # Z = sigma(Y)
@@ -255,17 +255,17 @@ class PIELM(object):
         Args:
              X_input: the input points
         return:
-             out2hidden: the output
+             coef_Matrix: the 1st order derivative matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=X_input)   # Y = x·W+B
         act_out2hidden = self.act_func2Deri(hidden_linear)               # Z = sigma'(Y), this is a matrix
 
-        W = np.reshape(self.W2Hidden, newshape=[1, -1])            # this is a vector
+        W = np.reshape(self.W2Hidden, newshape=[1, -1])                  # this is a vector
 
         if type2boundary == 'left':
-            coef_Matrix = -1.0 * np.multiply(W, act_out2hidden)    # the hadamard product of weight and Z
+            coef_Matrix = -1.0 * np.multiply(W, act_out2hidden)          # the hadamard product of weight and Z
         else:
-            coef_Matrix = 1.0 * np.multiply(W, act_out2hidden)     # the hadamard product of weight and Z
+            coef_Matrix = 1.0 * np.multiply(W, act_out2hidden)           # the hadamard product of weight and Z
         return coef_Matrix
 
     def assemble_matrix2Second_Derivative_1D(self, X_input=None):
@@ -274,14 +274,14 @@ class PIELM(object):
         Args:
              X_input: the input points
         return:
-             out2hidden: the output
+             coef_Matrix: the 2nd order derivative matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=X_input)  # Y = x·W+B
         act_out2hidden = self.act_func2DDeri(hidden_linear)             # Z = sigma''(Y), this is a matrix
 
         squareW = np.square(self.W2Hidden)
 
-        coef_Matrix = np.multiply(act_out2hidden, squareW)  # the hadamard product for column_sum of weight and  Z
+        coef_Matrix = np.multiply(act_out2hidden, squareW)  # the hadamard product for square of weight and  Z
 
         return coef_Matrix
 
@@ -291,7 +291,7 @@ class PIELM(object):
         Args:
              X_input: the input points
         return:
-             out2hidden: the output
+             coef_Matrix: the laplacian operator matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=X_input)  # Y = x·W+B
         act_out2hidden = self.act_func2DDeri(hidden_linear)             # Z = sigma''(Y), this is a matrix
@@ -309,7 +309,7 @@ class PIELM(object):
         Args:
              X_input: the input points
         return:
-             out2hidden: the output
+             coef_Matrix: the bi-laplacian operator matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=X_input)  # Y = x·W+B
         act_out2hidden = self.act_func2DDeri(hidden_linear)             # Z = sigma''(Y), this is a matrix
@@ -322,7 +322,7 @@ class PIELM(object):
         square_squareW = np.square(np.square(self.W2Hidden))
         sum2W_column = np.reshape(np.sum(square_squareW, axis=0), newshape=[1, -1])   # the sum of column for weight matrix
 
-        coef_Matrix2fourOrder = np.multiply(fourOrder_out2hidden, sum2W_column)  # the hadamard product for column_sum of weight and  Z
+        coef_Matrix2fourOrder = np.multiply(fourOrder_out2hidden, sum2W_column)       # the hadamard product for column_sum of weight and  Z
 
         coef_Matrix = coef_Matrix2fourOrder + coef_Matrix2SecondOrder_X
 
@@ -334,7 +334,7 @@ class PIELM(object):
         Args:
              XY_input: the input points
         return:
-             out2hidden: the output
+             act_out2hidden: the output performed by activation function
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XY_input)    # Y = x·W+B
         act_out2hidden = self.act_func2hidden(hidden_linear)               # Z = sigma(Y), this is a matrix
@@ -346,7 +346,7 @@ class PIELM(object):
         Args:
              XY_input: the input points
         return:
-             out2hidden: the output
+             act_out2hidden: the output performed by activation function
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XY_input)   # Y = x·W+B
         act_out2hidden = self.act_func2hidden(hidden_linear)              # Z = sigma(Y), this is a matrix
@@ -358,7 +358,7 @@ class PIELM(object):
         Args:
              XY_input: the input points
         return:
-             out2hidden: the output
+             coef_Matrix: the 1st order derivative matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XY_input)    # Y = x·W+B
         act_out2hidden = self.act_func2Deri(hidden_linear)                 # Z = sigma'(Y), this is a matrix
@@ -384,7 +384,7 @@ class PIELM(object):
              XY_input: the input points
              axis: direct to the derivative for inviable (x=0 or y=1)
         return:
-             out2hidden: the output
+             coef_Matrix: the 1st order derivative matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XY_input)    # Y = x·W+B
         act_out2hidden = self.act_func2Deri(hidden_linear)                 # Z = sigma'(Y), this is a matrix
@@ -404,7 +404,7 @@ class PIELM(object):
              XY_input: the input points
              axis: direct to the derivative for inviable (x=0 or y=1)
         return:
-             out2hidden: the output
+             coef_Matrix: the 2nd order derivative matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XY_input)         # Y = x·W+B
         act_out2hidden = self.act_func2DDeri(hidden_linear)                     # Z = sigma''(Y), this is a matrix
@@ -426,7 +426,7 @@ class PIELM(object):
         Args:
              XY_input: the input points
         return:
-             out2hidden: the output
+             coef_Matrix: the laplacian operator matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XY_input)         # Y = x·W+B
         act_out2hidden = self.act_func2DDeri(hidden_linear)                     # Z = sigma''(Y), this is a matrix
@@ -444,7 +444,7 @@ class PIELM(object):
         Args:
              XY_input: the input points
         return:
-             out2hidden: the output
+             coef_Matrix: the bi-laplacian operator matrix
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XY_input)         # Y = x·W+B
         SecondOrder_out2hidden = self.act_func2DDeri(hidden_linear)
@@ -593,26 +593,12 @@ class PIELM(object):
              out2hidden: the output
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XYZ_input)    # Y = x·W+B
-        SecondOrder_out2hidden = self.act_func2DDeri(hidden_linear)
-        FourOrder_out2hidden = self.act_func2DDDDeri(hidden_linear)  # Z = sigma''(Y), this is a matrix
-
-        squareW = np.square(self.W2Hidden)
-        W2X = np.reshape(squareW[0, :], newshape=[1, -1])
-        W2Y = np.reshape(squareW[1, :], newshape=[1, -1])
-        W2Z = np.reshape(squareW[2, :], newshape=[1, -1])
-
-        coef_Matrix2X = np.multiply(SecondOrder_out2hidden, W2X)
-        coef_Matrix2Y = np.multiply(SecondOrder_out2hidden, W2Y)
-        coef_Matrix2Z = np.multiply(SecondOrder_out2hidden, W2Z)
+        act_out2hidden = self.act_func2DDeri(hidden_linear)                 # Z = sigma''(Y), this is a matrix
 
         square_squareW = np.square(np.square(self.W2Hidden))
         sum2W_column = np.reshape(np.sum(square_squareW, axis=0), newshape=[1, -1])   # the sum of column for weight matrix
 
-        coef_Matrix2FourOrder = np.multiply(FourOrder_out2hidden, sum2W_column)    # the hadamard product for column_sum of weight and Z
-
-        coef_Matrix = coef_Matrix2FourOrder + 2.0 * np.multiply(coef_Matrix2X, coef_Matrix2Y) + \
-                      2.0 * np.multiply(coef_Matrix2X, coef_Matrix2Z) + \
-                      2.0 * np.multiply(coef_Matrix2Y, coef_Matrix2Z)
+        coef_Matrix = np.multiply(act_out2hidden, sum2W_column)   # the hadamard product for column_sum of weight and Z
 
         return coef_Matrix
 
@@ -753,32 +739,12 @@ class PIELM(object):
              out2hidden: the output
         """
         hidden_linear = self.get_linear_out2Hidden(input_data=XYZS_input)    # Y = x·W+B
-        SecondOrder_out2hidden = self.act_func2DDeri(hidden_linear)
-        FourOrder_out2hidden = self.act_func2DDDDeri(hidden_linear)  # Z = sigma''(Y), this is a matrix
-
-        squareW = np.square(self.W2Hidden)
-        W2X = np.reshape(squareW[0, :], newshape=[1, -1])
-        W2Y = np.reshape(squareW[1, :], newshape=[1, -1])
-        W2Z = np.reshape(squareW[2, :], newshape=[1, -1])
-        W2S = np.reshape(squareW[3, :], newshape=[1, -1])
-
-        coef_Matrix2X = np.multiply(SecondOrder_out2hidden, W2X)
-        coef_Matrix2Y = np.multiply(SecondOrder_out2hidden, W2Y)
-        coef_Matrix2Z = np.multiply(SecondOrder_out2hidden, W2Z)
-        coef_Matrix2S = np.multiply(SecondOrder_out2hidden, W2S)
+        act_out2hidden = self.act_func2DDeri(hidden_linear)                 # Z = sigma''(Y), this is a matrix
 
         square_squareW = np.square(np.square(self.W2Hidden))
         sum2W_column = np.reshape(np.sum(square_squareW, axis=0), newshape=[1, -1])   # the sum of column for weight matrix
 
-        coef_Matrix2FourOrder = np.multiply(FourOrder_out2hidden, sum2W_column)  # the hadamard product for column_sum of weight and Z
-
-        coef_Matrix = coef_Matrix2FourOrder + \
-                      2.0 * np.multiply(coef_Matrix2X, coef_Matrix2Y) + \
-                      2.0 * np.multiply(coef_Matrix2X, coef_Matrix2Z) + \
-                      2.0 * np.multiply(coef_Matrix2X, coef_Matrix2S) + \
-                      2.0 * np.multiply(coef_Matrix2Y, coef_Matrix2Z) + \
-                      2.0 * np.multiply(coef_Matrix2Y, coef_Matrix2S) + \
-                      2.0 * np.multiply(coef_Matrix2Z, coef_Matrix2S)
+        coef_Matrix = np.multiply(act_out2hidden, sum2W_column)   # the hadamard product for column_sum of weight and Z
 
         return coef_Matrix
 
