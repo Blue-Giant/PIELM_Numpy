@@ -485,11 +485,11 @@ if __name__ == "__main__":
         # R['act_name'] = 'sinAddcos'
 
     # R['opt2initW'] = 'normal'
-    # R['opt2initW'] = 'uniform'
-    R['opt2initW'] = 'scale_uniform'
+    # R['opt2initW'] = 'uniform11'
+    R['opt2initW'] = 'scale_uniform11'
 
     # R['opt2initB'] = 'normal'
-    # R['opt2initB'] = 'uniform'
-    R['opt2initB'] = 'scale_uniform'
+    # R['opt2initB'] = 'uniform11'
+    R['opt2initB'] = 'scale_uniform11'
 
     solve_biharmonic(Rdic=R)

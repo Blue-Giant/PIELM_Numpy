@@ -201,8 +201,8 @@ def solve_biharmonic(Rdic=None):
         region_b=left, region_t=right, to_float=True, float_type=np.float64, eps=0.001, opt2rand='random',
         shuffle_uniform=True)
 
-    f_side, u_true, u_left, u_right, u_bottom, u_top, ux_left, ux_right, uy_bottom, uy_top = \
-        Biharmonic_eqs.get_biharmonic_Navier_2D(equa_name=Rdic['Equa_name'])
+    f_side, u_true, u_left, u_right, u_bottom, u_top, ux_left, ux_right, uy_bottom, uy_top, lapU_left, lapU_right, \
+    lapU_bottom, lapU_top = Biharmonic_eqs.get_biharmonic_Navier_2D(equa_name=Rdic['Equa_name'])
 
     A12, A21, A22, f_i = model.assemble_matrix2inner(XY_inner=points, fside=f_side)
 
@@ -214,13 +214,13 @@ def solve_biharmonic(Rdic=None):
 
     B_t, gt = model.assemble_matrix2boundary(XY_bd=top_bd,  gside=u_top)
 
-    N_l, hl = model.assemble_matrix2_2ndDeriBD(XY_bd=left_bd, hside=ux_left)
+    N_l, hl = model.assemble_matrix2_2ndDeriBD(XY_bd=left_bd, hside=lapU_left)
 
-    N_r, hr = model.assemble_matrix2_2ndDeriBD(XY_bd=right_bd, hside=ux_right)
+    N_r, hr = model.assemble_matrix2_2ndDeriBD(XY_bd=right_bd, hside=lapU_right)
 
-    N_b, hb = model.assemble_matrix2_2ndDeriBD(XY_bd=bottom_bd, hside=uy_bottom)
+    N_b, hb = model.assemble_matrix2_2ndDeriBD(XY_bd=bottom_bd, hside=lapU_bottom)
 
-    N_t, ht = model.assemble_matrix2_2ndDeriBD(XY_bd=top_bd, hside=uy_top)
+    N_t, ht = model.assemble_matrix2_2ndDeriBD(XY_bd=top_bd, hside=lapU_top)
 
     num2inner = Rdic['point_num2inner']
     num2boundary = Rdic['point_num2boundary']
@@ -385,11 +385,11 @@ if __name__ == "__main__":
         # R['act_name'] = 'sinAddcos'
 
     # R['opt2initW'] = 'normal'
-    # R['opt2initW'] = 'uniform'
-    R['opt2initW'] = 'scale_uniform'
+    # R['opt2initW'] = 'uniform11'
+    R['opt2initW'] = 'scale_uniform11'
 
     # R['opt2initB'] = 'normal'
-    # R['opt2initB'] = 'uniform'
-    R['opt2initB'] = 'scale_uniform'
+    # R['opt2initB'] = 'uniform11'
+    R['opt2initB'] = 'scale_uniform11'
 
     solve_biharmonic(Rdic=R)
