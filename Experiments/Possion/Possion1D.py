@@ -23,7 +23,7 @@ from utilizers import dataUtilizer2numpy
 class GELM2Possion(object):
     def __init__(self, indim=1, outdim=1, num2hidden=None, name2Model='DNN', actName2hidden='tanh', actName2Deri='tanh',
                  actName2DDeri='tanh', type2float='float32', opt2init_W='xavier_normal',  opt2init_B='xavier_uniform',
-                 W_sigma=1.0, B_sigma=1.0):
+                 W_sigma=1.0, B_sigma=1.0, freq=None, repeatHighFreq=False):
         super(GELM2Possion, self).__init__()
 
         self.indim = indim
@@ -37,10 +37,28 @@ class GELM2Possion(object):
         self.act_func2Deri = ELM_Base.ActFunc2Derivate(actName=actName2Deri)
         self.act_func2DDeri = ELM_Base.ActFunc2DDerivate(actName=actName2DDeri)
 
-        self.ELM_Bases = ELM_Base.PIELM(
-            dim2in=indim, dim2out=1, num2hidden_units=num2hidden, name2Model='DNN', actName2hidden=actName2hidden,
-            actName2Deri=actName2Deri, actName2DDeri=actName2DDeri, type2float=type2float,  opt2init_hiddenW=opt2init_W,
-            opt2init_hiddenB=opt2init_B, sigma2W=W_sigma, sigma2B=B_sigma)
+        if str.upper(name2Model) == 'PIELM':
+            self.ELM_Bases = ELM_Base.PIELM(
+                dim2in=indim, dim2out=outdim, num2hidden_units=num2hidden, name2Model='DNN', actName2hidden=actName2hidden,
+                actName2Deri=actName2Deri, actName2DDeri=actName2DDeri, type2float=type2float,
+                opt2init_hiddenW=opt2init_W, opt2init_hiddenB=opt2init_B, sigma2W=W_sigma, sigma2B=B_sigma)
+        elif str.upper(name2Model) == 'MULTI_SCALE_FOURIER_ELM':
+            self.ELM_Bases = ELM_Base.MultiscaleFourierPIELM(
+                dim2in=indim, dim2out=1, num2hidden_units=num2hidden, name2Model='DNN', actName2hidden=actName2hidden,
+                actName2Deri=actName2Deri, actName2DDeri=actName2DDeri, type2float=type2float, scale=freq,
+                opt2init_hiddenW=opt2init_W, opt2init_hiddenB=opt2init_B, sigma2W=W_sigma, sigma2B=B_sigma,
+                repeat_Highfreq=repeatHighFreq)
+        elif str.upper(name2Model) == 'MULTI_4FF_ELM':
+            self.ELM_Bases = ELM_Base.Multi4FF_PIELM(
+                dim2in=indim, dim2out=outdim, num2hidden_units=num2hidden, name2Model='DNN', actName2hidden=actName2hidden,
+                actName2Deri=actName2Deri, actName2DDeri=actName2DDeri, type2float=type2float,
+                opt2init_hiddenW=opt2init_W, opt2init_hiddenB=opt2init_B, sigma_W1=1.0, sigma_W2=5.0, sigma_W3=10.0,
+                sigma_W4=15.0, sigma_B1=1.0, sigma_B2=5.0, sigma_B3=10.0, sigma_B4=15.0)
+        else:
+            self.ELM_Bases = ELM_Base.FourierFeaturePIELM(
+                dim2in=indim, dim2out=outdim, num2hidden_units=num2hidden, name2Model='DNN', actName2hidden=actName2hidden,
+                actName2Deri=actName2Deri, actName2DDeri=actName2DDeri, type2float=type2float,
+                opt2init_hiddenW=opt2init_W, opt2init_hiddenB=opt2init_B, sigma2W=W_sigma, sigma2B=B_sigma)
 
         if type2float == 'float32':
             self.float_type = np.float32
@@ -81,7 +99,7 @@ class GELM2Possion(object):
         return (B, g)
 
     def test_rfn(self, points=None):
-        ELM_Bases = self.ELM_Bases.get_out2Hidden(input_data=points)
+        ELM_Bases = self.ELM_Bases.assemble_matrix2interior_1D(X_input=points)
         return ELM_Bases
 
 
@@ -99,8 +117,10 @@ def solve_possion(Rdic=None):
     right = 1.0
 
     Model = GELM2Possion(indim=Rdic['input_dim'], outdim=Rdic['out_dim'], num2hidden=Rdic['rfn_hidden'],
-                         name2Model='DNN', actName2hidden=Rdic['act_name'], type2float='float64', opt2init_W='normal',
-                         opt2init_B='uniform', W_sigma=1.0, B_sigma=1.0)
+                         name2Model=Rdic['name2model'], actName2hidden=Rdic['act_name'], actName2Deri=Rdic['act_name'],
+                         actName2DDeri=Rdic['act_name'], type2float='float64', opt2init_W=Rdic['opt2initW'],
+                         opt2init_B=Rdic['opt2initB'], W_sigma=Rdic['sigma'], B_sigma=Rdic['sigma'], freq=Rdic['freq'],
+                         repeatHighFreq=True)
 
     type2float = np.float64
     # points = dataUtilizer2numpy.gene_1Drand_points2inner(num2point=Rdic['point_num2inner'],
@@ -129,7 +149,10 @@ def solve_possion(Rdic=None):
     num2boundary = Rdic['point_num2boundary']
     rfn_hidden = Rdic['rfn_hidden']
 
-    A = np.zeros([num2inner + 2 * num2boundary, rfn_hidden])
+    if str.upper(Rdic['name2model']) == 'MULTI_4FF_ELM':
+        A = np.zeros([num2inner + 2 * num2boundary, 4*rfn_hidden])
+    else:
+        A = np.zeros([num2inner + 2 * num2boundary, rfn_hidden])
     F = np.zeros([num2inner + 2 * num2boundary, 1])
 
     A[0:num2inner, :] = A_I
@@ -223,8 +246,9 @@ if __name__ == "__main__":
         shutil.copy(__file__, '%s/%s' % (FolderName, os.path.basename(__file__)))
 
     R['PDE_type'] = 'Laplace'
-    R['Equa_name'] = 'PDE1'
+    # R['Equa_name'] = 'PDE1'
     # R['Equa_name'] = 'PDE2'
+    R['Equa_name'] = 'PDE3'
 
     R['point_num2inner'] = 2000
     R['point_num2boundary'] = 5
@@ -232,22 +256,49 @@ if __name__ == "__main__":
     R['input_dim'] = 1
     R['out_dim'] = 1
 
-    R['name2model'] = 'PIELM'
+    # R['name2model'] = 'PIELM'
+    # R['name2model'] = 'FF_PIELM'
+    # R['name2model'] = 'Multi_4FF_ELM'
+    R['name2model'] = 'MULTI_SCALE_FOURIER_ELM'
 
-    R['sigma'] = 2
+    if R['name2model'] == 'Multi_4FF_ELM':
+        R['rfn_hidden'] = 100
+        # R['rfn_hidden'] = 250
+        # R['rfn_hidden'] = 300
+        # R['rfn_hidden'] = 500
 
-    R['act_name'] = 'tanh'
-    # R['act_name'] = 'sin'
-    # R['act_name'] = 'gauss'
-    # R['act_name'] = 'sinAddcos'
+    # R['sigma'] = 6
+    # R['sigma'] = 8
+    # R['sigma'] = 10
+    # R['sigma'] = 20
+    # R['sigma'] = 30
+    # R['sigma'] = 40
+    # R['sigma'] = 50
+    # R['sigma'] = 60
+    R['sigma'] = 70
 
-    # R['act_name'] = 'fourier'
+    R['freq'] = np.concatenate(([1], np.arange(1, 50 - 1)), axis=0)
+
+    if R['name2model'] == 'Multi_4FF_ELM' or R['name2model'] == 'FF_PIELM':
+        R['act_name'] = 'fourier'
+    elif R['name2model'] == 'MULTI_SCALE_FOURIER_ELM':
+        R['act_name'] = 'fourier'
+
+        R['opt2initW'] = 'uniform11'
+        # R['opt2initW'] = 'xavier_normal'
+
+        R['opt2initB'] = 'uniform11'
+    else:
+        # R['act_name'] = 'tanh'
+        R['act_name'] = 'sin'
+        # R['act_name'] = 'gauss'
+        # R['act_name'] = 'sinAddcos'
 
     # R['opt2initW'] = 'normal'
-    # R['opt2initW'] = 'uniform'
-    R['opt2initW'] = 'scale_uniform'
+    # R['opt2initW'] = 'uniform11'
+    R['opt2initW'] = 'scale_uniform11'
 
     # R['opt2initB'] = 'normal'
-    # R['opt2initB'] = 'uniform'
-    R['opt2initB'] = 'scale_uniform'
+    # R['opt2initB'] = 'uniform11'
+    R['opt2initB'] = 'scale_uniform11'
     solve_possion(Rdic=R)
