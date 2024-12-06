@@ -5,7 +5,7 @@ Physcial Informed Extreme Learning Machine(PIELM) method to solve PDEs, such as 
 # Corresponding Papers
 
 ## Augmented physics informed extreme learning machine to solve thebiharmonic equations via Fourier expansions
-created by Xi’an Li, Jinran Wu, Yujia Huang, Jiaxin Deng, Zhe Ding, You-Gan Wang, Xin Tai, Liang Liu
+created by Xi’an Li, Jinran Wu, Yujia Huang, Zhe Ding, You-Gan Wang, Xin Tai, Liang Liu
 
 [[Paper]](https://arxiv.org/pdf/2310.13947.pdf)
 
